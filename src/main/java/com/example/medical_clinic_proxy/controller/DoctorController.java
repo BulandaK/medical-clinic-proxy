@@ -7,13 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @Slf4j
@@ -24,14 +20,16 @@ public class DoctorController {
 
     @GetMapping("/{doctorId}/visits")
     public PageResponse<VisitDto> getDoctorAvailableVisits(Pageable pageable, @PathVariable Long doctorId) {
+        log.info("Get available visits for doctor with ID: {}",doctorId);
         return doctorService.getAvailableVisitsByDoctorId(pageable, doctorId);
     }
 
-    @GetMapping("/{specialization}/{date}")
+    @GetMapping("/visits")
     public PageResponse<VisitDto> getVisitsBySpecializationAndDate(
             Pageable pageable,
-            @PathVariable String specialization,
-            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date) {
+            @RequestParam String specialization,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  LocalDate date) {
+        log.info("Get available visits for doctors with specialization: {} with on date: {}",specialization,date);
         return doctorService.getAvailableVisitsBySpecializationAndDate(pageable, date, specialization);
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
-@FeignClient(value = "medical-clinic", url = "${medical.clinic.api.url}", configuration = MedicalClinicConfig.class)
+@FeignClient(value = "medical-clinic", url = "${medical.clinic.api.url}", configuration = MedicalClinicConfig.class, fallbackFactory = MedicalClinicClientFallbackFactory.class)
 public interface MedicalClinicClient {
     @GetMapping("/visits/{patientId}")
     List<VisitDto> getVisits(@PathVariable Long patientId);
