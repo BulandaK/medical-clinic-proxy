@@ -20,6 +20,7 @@ public class PatientController {
 
     @GetMapping("/{id}/visits")
     public List<VisitDto> getVisits(@PathVariable Long id) {
+        log.info("Get all visits for patient with ID: {}",id);
         return patientService.getVisits(id);
     }
 }

@@ -15,6 +15,7 @@ public class VisitController {
 
     @PostMapping("/{visitId}/patient/{patientId}")
     public VisitDto book(@PathVariable Long visitId,@PathVariable Long patientId) {
+        log.info("Book visits with ID: {}, for patient: {}",visitId,patientId);
         return visitService.bookVisit(visitId,patientId);
     }
 }
