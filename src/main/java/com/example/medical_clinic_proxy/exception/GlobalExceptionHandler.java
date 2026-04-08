@@ -14,9 +14,9 @@ import java.time.LocalDateTime;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(MedicalClinicException.class)
-    public ResponseEntity<ErrorResponse> handleMedicalClinicException(MedicalClinicException ex,HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleMedicalClinicException(MedicalClinicException ex, HttpServletRequest request) {
         log.error("[Error] error occurred: {}", ex.getMessage());
-        return createResponse(ex,request,ex.getHttpStatus());
+        return createResponse(ex, request, ex.getHttpStatus());
     }
 
     private ResponseEntity<ErrorResponse> createResponse(Exception ex, HttpServletRequest request, HttpStatus status) {

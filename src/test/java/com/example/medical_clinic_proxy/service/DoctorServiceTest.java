@@ -3,6 +3,8 @@ package com.example.medical_clinic_proxy.service;
 import com.example.medical_clinic_proxy.client.MedicalClinicClient;
 import com.example.medical_clinic_proxy.dto.PageResponse;
 import com.example.medical_clinic_proxy.dto.VisitDto;
+import com.example.medical_clinic_proxy.exception.NotFoundException;
+import com.example.medical_clinic_proxy.exception.ServiceUnavailableException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,9 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -24,48 +25,89 @@ public class DoctorServiceTest {
     @InjectMocks
     private DoctorService doctorService;
 
+
     @Test
-    void getAvailableVisitsByDoctorId_DataCorrect_ReturnsVisit() {
-        PageRequest page = PageRequest.of(1, 1);
+    void getAllVisits_DataCorrect_ReturnsPageResponse() {
+        Pageable pageable = PageRequest.of(0, 10);
         Long doctorId = 1L;
-        VisitDto visit = new VisitDto(1L, null, null, doctorId, "Jan Kowalski", 1L, "Adam Nowak");
-        List<VisitDto> visitDtoList = List.of(visit);
-        PageResponse<VisitDto> content = new PageResponse<>(visitDtoList, 1, 1, 1L, 1);
+        VisitDto visit = new VisitDto(1L, null, null, doctorId, "Adam Nowak", null, null);
+        PageResponse<VisitDto> pageResponse = new PageResponse<>(List.of(visit), 1, 1, 1L, 1);
 
-        when(medicalClinicClient.getAllVisits(page, doctorId, null, null)).thenReturn(content);
+        when(medicalClinicClient.getAllVisits(pageable, doctorId, null, null, null, false))
+                .thenReturn(pageResponse);
 
-        PageResponse<VisitDto> response = doctorService.getAvailableVisitsByDoctorId(page, doctorId);
+        PageResponse<VisitDto> response = doctorService.getAllVisits(pageable, doctorId);
 
         Assertions.assertAll(
+                () -> Assertions.assertNotNull(response),
                 () -> Assertions.assertEquals(1, response.content().size()),
-                () -> Assertions.assertEquals(1L, response.content().getFirst().doctorId()),
-                () -> Assertions.assertEquals("Jan Kowalski", response.content().getFirst().doctorFullName()),
-                () -> Assertions.assertEquals("Adam Nowak", response.content().getFirst().patientFullName())
+                () -> Assertions.assertEquals(doctorId, response.content().get(0).doctorId()),
+                () -> Assertions.assertEquals("Adam Nowak", response.content().get(0).doctorFullName())
         );
-
-        verify(medicalClinicClient, times(1)).getAllVisits(page, doctorId, null, null);
     }
 
     @Test
-    void getAvailableVisitsBySpecializationAndDate_DataCorrect_ReturnsVisits() {
-        PageRequest page = PageRequest.of(1, 1);
-        LocalDate date = LocalDate.of(2026, 12, 12);
-        String specialization = "Cardiology";
-        VisitDto visit = new VisitDto(1L, null, null, 1L, "Jan Kowalski", 1L, "Adam Nowak");
-        List<VisitDto> visitDtoList = List.of(visit);
-        PageResponse<VisitDto> content = new PageResponse<>(visitDtoList, 1, 1, 1L, 1);
+    void getAllVisits_DoctorNotFound_ThrowsNotFoundException() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Long doctorId = 99L;
 
-        when(medicalClinicClient.getAllVisits(page, null, date, specialization)).thenReturn(content);
+        when(medicalClinicClient.getAllVisits(pageable, doctorId, null, null, null, false))
+                .thenThrow(new NotFoundException("Resource not found (Doctor/Visit)"));
 
-        PageResponse<VisitDto> response = doctorService.getAvailableVisitsBySpecializationAndDate(page, date, specialization);
+        NotFoundException exception = Assertions.assertThrows(NotFoundException.class,
+                () -> doctorService.getAllVisits(pageable, doctorId));
 
-        Assertions.assertAll(
-                () -> Assertions.assertEquals(1, response.content().size()),
-                () -> Assertions.assertEquals(1L, response.content().getFirst().doctorId()),
-                () -> Assertions.assertEquals("Jan Kowalski", response.content().getFirst().doctorFullName()),
-                () -> Assertions.assertEquals("Adam Nowak", response.content().getFirst().patientFullName())
-        );
-        verify(medicalClinicClient, times(1)).getAllVisits(page, null,date,specialization);
+        Assertions.assertEquals("Resource not found (Doctor/Visit)", exception.getMessage());
+    }
 
+    @Test
+    void getAllVisits_ServiceUnavailable_ThrowsServiceUnavailableException() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Long doctorId = 1L;
+
+        when(medicalClinicClient.getAllVisits(pageable, doctorId, null, null, null, false))
+                .thenThrow(new ServiceUnavailableException("Service not available right now"));
+
+        ServiceUnavailableException exception = Assertions.assertThrows(ServiceUnavailableException.class,
+                () -> doctorService.getAllVisits(pageable, doctorId));
+
+        Assertions.assertEquals("Service not available right now", exception.getMessage());
+    }
+
+    @Test
+    void deleteVisit_DataCorrect_DeletesSuccessfully() {
+        Long visitId = 1L;
+
+        doNothing().when(medicalClinicClient).deleteVisit(visitId);
+
+        Assertions.assertDoesNotThrow(() -> doctorService.deleteVisit(visitId));
+
+        verify(medicalClinicClient, times(1)).deleteVisit(visitId);
+    }
+
+    @Test
+    void deleteVisit_VisitNotFound_ThrowsNotFoundException() {
+        Long visitId = 99L;
+
+        doThrow(new NotFoundException("Resource not found (Doctor/Visit)"))
+                .when(medicalClinicClient).deleteVisit(visitId);
+
+        NotFoundException exception = Assertions.assertThrows(NotFoundException.class,
+                () -> doctorService.deleteVisit(visitId));
+
+        Assertions.assertEquals("Resource not found (Doctor/Visit)", exception.getMessage());
+    }
+
+    @Test
+    void deleteVisit_ServiceUnavailable_ThrowsServiceUnavailableException() {
+        Long visitId = 1L;
+
+        doThrow(new ServiceUnavailableException("Service not available right now"))
+                .when(medicalClinicClient).deleteVisit(visitId);
+
+        ServiceUnavailableException exception = Assertions.assertThrows(ServiceUnavailableException.class,
+                () -> doctorService.deleteVisit(visitId));
+
+        Assertions.assertEquals("Service not available right now", exception.getMessage());
     }
 }

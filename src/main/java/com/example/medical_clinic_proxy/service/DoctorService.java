@@ -16,11 +16,11 @@ import java.time.LocalDate;
 public class DoctorService {
     private final MedicalClinicClient medicalClinicClient;
 
-    public PageResponse<VisitDto> getAvailableVisitsByDoctorId(Pageable pageable, Long doctorId) {
-        return medicalClinicClient.getAllVisits(pageable, doctorId, null, null);
+    public PageResponse<VisitDto> getAllVisits(Pageable pageable, Long doctorId) {
+        return medicalClinicClient.getAllVisits(pageable, doctorId, null, null, null, false);
     }
 
-    public PageResponse<VisitDto> getAvailableVisitsBySpecializationAndDate(Pageable pageable, LocalDate date, String specialization) {
-        return medicalClinicClient.getAllVisits(pageable, null, date, specialization);
+    public void deleteVisit(Long visitId) {
+        medicalClinicClient.deleteVisit(visitId);
     }
 }
