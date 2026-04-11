@@ -41,7 +41,7 @@ public class PatientControllerTest {
         List<VisitDto> visits = List.of(visit);
 
         when(patientService.getVisits(any())).thenReturn(visits);
-        mockMvc.perform(get("/patient/{id}/my-visits", patientId)
+        mockMvc.perform(get("/patient/{id}/visits", patientId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
@@ -57,12 +57,12 @@ public class PatientControllerTest {
         when(patientService.getVisits(patientId))
                 .thenThrow(new NotFoundException("Resource not found (Doctor/Visit)"));
 
-        mockMvc.perform(get("/patient/{id}/my-visits", patientId))
+        mockMvc.perform(get("/patient/{id}/visits", patientId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Not Found"))
                 .andExpect(jsonPath("$.message").value("Resource not found (Doctor/Visit)"))
-                .andExpect(jsonPath("$.path").value("/patient/99/my-visits"));
+                .andExpect(jsonPath("$.path").value("/patient/99/visits"));
     }
 
     @Test

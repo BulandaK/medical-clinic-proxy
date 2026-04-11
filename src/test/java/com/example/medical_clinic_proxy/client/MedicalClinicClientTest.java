@@ -22,6 +22,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -173,7 +174,8 @@ public class MedicalClinicClientTest {
         DoctorDto doctor = new DoctorDto(1L, "Cardiology", "drhaouse@gmail.com", "Luka", "House");
         List<DoctorDto> mockResponse = List.of(doctor);
 
-        wireMockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/doctors/specialization/Cardiology"))
+        wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo("/doctors/specialization"))
+                .withQueryParam("specialization", WireMock.equalTo("Cardiology"))
                 .willReturn(WireMock.aResponse()
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                         .withBody(objectMapper.writeValueAsString(mockResponse))
