@@ -31,8 +31,8 @@ public interface MedicalClinicClient {
             @RequestParam(value = "available", required = false) boolean available
     );
 
-    @GetMapping("/doctors/specialization/{specialization}")
-    List<DoctorDto> getDoctorsBySpecialization(@PathVariable String specialization);
+    @GetMapping("/doctors/specialization")
+    List<DoctorDto> getDoctorsBySpecialization(@RequestParam String specialization);
 
     @DeleteMapping("/visits/{id}")
     void deleteVisit(@PathVariable Long id);

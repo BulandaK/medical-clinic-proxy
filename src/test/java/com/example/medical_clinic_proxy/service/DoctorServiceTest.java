@@ -25,7 +25,6 @@ public class DoctorServiceTest {
     @InjectMocks
     private DoctorService doctorService;
 
-
     @Test
     void getAllVisits_DataCorrect_ReturnsPageResponse() {
         Pageable pageable = PageRequest.of(0, 10);
