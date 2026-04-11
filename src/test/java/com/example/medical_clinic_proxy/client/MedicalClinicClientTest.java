@@ -195,7 +195,8 @@ public class MedicalClinicClientTest {
     void getDoctorsBySpecialization_NotFound_ThrowsNotFoundException() {
         String specialization = "Cardiology";
 
-        wireMockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/doctors/specialization/Cardiology"))
+        wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo("/doctors/specialization"))
+                .withQueryParam("specialization", WireMock.equalTo("Cardiology"))
                 .willReturn(WireMock.aResponse()
                         .withStatus(404)));
 
